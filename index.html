@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14161c">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>내 음악</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="player">
+  <div class="top">
+    <div class="np" id="npBox" role="button" tabindex="0" title="현재 곡 위치로 이동">
+      <div class="np-title" id="npTitle">곡을 불러와 주세요</div>
+      <div class="np-sub" id="npSub">아래 ‘➕ 불러오기’로 음악 파일을 추가</div>
+    </div>
+    <button id="installBtn" class="chip" hidden>⬇ 앱 설치</button>
+  </div>
+  <div class="timer-pill" id="timerPill" hidden></div>
+  <div class="seek">
+    <span id="tCur">0:00</span>
+    <input type="range" id="seek" min="0" max="0" step="0.1" value="0" aria-label="재생 위치">
+    <span id="tDur">0:00</span>
+  </div>
+  <div class="controls">
+    <button id="prevBtn" class="ctl" aria-label="이전 곡">
+      <svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>
+    </button>
+    <button id="playBtn" class="ctl big" aria-label="재생">
+      <svg viewBox="0 0 24 24" id="icoPlay"><path d="M8 5v14l11-7z"/></svg>
+      <svg viewBox="0 0 24 24" id="icoPause" hidden><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+    </button>
+    <button id="nextBtn" class="ctl" aria-label="다음 곡">
+      <svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>
+    </button>
+  </div>
+  <div class="modes">
+    <button id="shuffleBtn" class="mode" aria-pressed="false">🔀 랜덤</button>
+    <button id="repOneBtn" class="mode" aria-pressed="false">🔂 한 곡 반복</button>
+    <button id="repChkBtn" class="mode" aria-pressed="false">☑ 체크곡 반복</button>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <h2>⏰ 자동 멈춤</h2>
+    <div class="row">
+      <label for="stopTime">멈출 시각</label>
+      <input type="time" id="stopTime" value="23:00">
+      <label class="switch" title="자동 멈춤 켜기/끄기"><input type="checkbox" id="stopOn"><span></span></label>
+    </div>
+    <div class="row">
+      <label for="fadeSec">소리 줄이는 시간</label>
+      <select id="fadeSec">
+        <option value="0">바로 멈춤</option>
+        <option value="5">5초</option>
+        <option value="10">10초</option>
+        <option value="30">30초</option>
+        <option value="60">1분</option>
+      </select>
+    </div>
+    <p class="hint" id="stopInfo"></p>
+  </section>
+
+  <section class="card">
+    <h2>🎵 재생 순서</h2>
+    <div class="row">
+      <span>순서</span>
+      <div class="seg" id="orderSeg">
+        <button data-v="seq">순서대로</button>
+        <button data-v="shuffle">랜덤</button>
+      </div>
+    </div>
+    <div class="row">
+      <label for="loopAll">목록 끝나면 처음부터 다시</label>
+      <label class="switch"><input type="checkbox" id="loopAll"><span></span></label>
+    </div>
+    <div class="row">
+      <span class="startno"><input type="number" id="startNo" min="1" value="1" inputmode="numeric" aria-label="시작 번호"> 번 곡부터</span>
+      <button id="startBtn" class="btn primary">▶ 재생</button>
+    </div>
+  </section>
+
+  <section class="card list-card">
+    <div class="tools">
+      <button id="importBtn" class="btn primary">➕ 불러오기</button>
+      <span class="count" id="countInfo">0곡</span>
+    </div>
+    <div class="tools">
+      <select id="sortKey" aria-label="정렬 기준">
+        <option value="date">수정한 날짜순</option>
+        <option value="name">이름순</option>
+        <option value="dur">길이순</option>
+      </select>
+      <button id="sortDir" class="btn">↑ 오름차순</button>
+    </div>
+    <div class="tools">
+      <label class="chk-all"><input type="checkbox" id="checkAll"> 전체 체크</label>
+      <button id="delChecked" class="btn danger" disabled>🗑 체크한 곡 삭제</button>
+    </div>
+    <ul id="list" class="list"></ul>
+    <p class="empty" id="emptyMsg">아직 곡이 없습니다.<br>‘➕ 불러오기’를 눌러 폰의 음악 파일을 고르세요.<br>(여러 개를 한 번에 고를 수 있습니다)</p>
+  </section>
+
+  <p class="foot">원본 파일을 변환 없이 그대로 재생합니다 (FLAC·WAV 무손실 포함).<br>
+  인터넷으로 아무것도 보내지 않으며, 곡은 이 폰의 앱 안에만 보관됩니다.<br>
+  앱에서 삭제해도 폰에 있던 원본 파일은 그대로 남습니다.<br>
+  <span id="storageInfo"></span></p>
+</main>
+
+<input type="file" id="fileInput" accept="audio/*,.mp3,.m4a,.aac,.flac,.wav,.ogg,.oga,.opus,.weba,.webm" multiple hidden>
+<audio id="audio" preload="auto"></audio>
+
+<div id="endScreen" class="overlay" hidden>
+  <div class="end-box">
+    <div class="end-moon">🌙</div>
+    <h3>재생을 마쳤습니다</h3>
+    <p id="endMsg"></p>
+    <div class="end-btns">
+      <button id="endResume" class="btn">▶ 이어서 재생</button>
+      <button id="endClose" class="btn primary">닫기</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
